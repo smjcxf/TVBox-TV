@@ -24,13 +24,13 @@ jobs:
         include:
           - userName: smjcxf
             repoName: TV 
-            branchName: fongmi
+            branchName: release
           #- userName: smjcxf
             #repoName: TV 
             #branchName: okjack
           - userName: smjcxf
             repoName: TV
-            branchName: release
+            branchName: fongmi
 
     steps:
       - name: Checkout
