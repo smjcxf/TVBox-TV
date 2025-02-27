@@ -22,13 +22,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - userName: xinyi1984
+          - userName: smjcxf
             repoName: TV 
             branchName: fongmi
-          #- userName: xinyi1984
+          #- userName: smjcxf
             #repoName: TV 
             #branchName: okjack
-          - userName: xinyi1984
+          - userName: smjcxf
             repoName: TV
             branchName: release
 
@@ -72,7 +72,7 @@ jobs:
         working-directory: TVBox-TV/media
         run: |
           echo '修改VersionName'
-          if [ "${{ matrix.userName }}" == "xinyi1984" ]; then
+          if [ "${{ matrix.userName }}" == "smjcxf" ]; then
             # 进行 sed 修改
             sed -i 's/\.concat(buildTime())/ +\"${{ env.tag }}\"/g' app/build.gradle 
           else
@@ -90,7 +90,7 @@ jobs:
         if: ${{ env.commit }}
         working-directory: TVBox-TV/media
         run: |
-          #删除xinyi1984-TV的release目录
+          #删除smjcxf-TV的release目录
           rm -rf release
           zip -q -x ".git/*" -x  ".github/*" -r source-${{ env.commitS }}.zip .
           #tar -cJf source-${{ env.commitS }}.tar.xz --exclude=.git --exclude=.github *
@@ -186,7 +186,7 @@ jobs:
          #if: ${{ env.commit }}
          #run: |
            ## 设置你的 GitHub 仓库信息
-           #REPO_OWNER=xinyi1984
+           #REPO_OWNER=smjcxf
            #REPO_NAME=TVBox-TV
            #GITHUB_TOKEN=${{ secrets.GITHUBXYTV_TOKEN }} # 这是 GitHub Actions 自动提供的 token
            #RELEASE_NAME=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}\/tree\/${{ matrix.branchName }}" ${{ github.workspace }}/README.md |grep -o '[0-9\-]\{13\}') # 这是你想要删除的 releases 的名称
@@ -244,7 +244,7 @@ jobs:
         if: ${{ env.commit }}
         working-directory: TVBox-TV/media
         run: |
-          git clone --depth 5 https://github.com/xinyi1984/xytv.git
+          git clone --depth 5 https://github.com/smjcxf/xytv.git
           sed -i "s#https://ghfast.top/https://raw.githubusercontent.com#https://ghfast.top/https://raw.githubusercontent.com#g" xytv/json/market.json
           sed -i "s#[0-9]\{8\}-[0-9]\{4\}#${{ env.tag }}#g" xytv/json/market.json
           cd xytv
@@ -252,7 +252,7 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add json/market.json
           git remote rm origin
-          git remote add origin "https://xinyi1984:${{ secrets.GITHUBXYTV_TOKEN }}@github.com/xinyi1984/xytv"
+          git remote add origin "https://smjcxf:${{ secrets.GITHUBXYTV_TOKEN }}@github.com/smjcxf/xytv"
           git commit -m "更新market.json"
           git push -f -u origin master
         continue-on-error: true
@@ -261,7 +261,7 @@ jobs:
         if: ${{ env.commit }}
         run: |
           # 克隆fongmi分支到临时目录
-          git clone --depth 5 --branch fongmi "https://xinyi1984:${{ secrets.GITHUB_TOKEN }}@github.com/xinyi1984/TVBox-TV.git" fongmi-apk
+          git clone --depth 5 --branch fongmi "https://smjcxf:${{ secrets.GITHUB_TOKEN }}@github.com/smjcxf/TVBox-TV.git" fongmi-apk
           cd fongmi-apk
 
           # 根据当前分支和 versionName 设置目标目录
