@@ -12,4 +12,4 @@ This repo relies on the following third-party projects:
 - [takagen99/Box](https://github.com/takagen99/Box) (Updated: 2a3af7f08fc8133bc40abccf9b71b3747b19bb94) (name: 20240929-1529)
 - [smjcxf/TV/tree/okjack](https://github.com/smjcxf/TV/tree/okjack) (Updated: 6e73818cc85c74474a0ccd9b991a4e49dae7f9aa) (name: 20241001-0815)
 - [smjcxf/TV/tree/fongmi](https://github.com/smjcxf/TV/tree/fongmi) (Updated: b131b8d7af298c8a9708869f002478df20136232) (name: 20250227-0821)
-- [smjcxf/TV/tree/release](https://github.com/smjcxf/TV/tree/release) (Updated: 797546a45f279bb8ed54ca449a55f620908e48db) (name: 20250228-1413)
+- [smjcxf/TV/tree/release](https://github.com/smjcxf/TV/tree/release) (Updated: 3ee47a6c1af4cefc710346416376bb2d9d49a4ca) (name: 20250228-1929)
