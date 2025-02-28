@@ -25,9 +25,9 @@ jobs:
           - userName: smjcxf
             repoName: TV 
             branchName: fongmi
-          - userName: smjcxf
-            repoName: TV 
-            branchName: okjack
+          #- userName: smjcxf
+            #repoName: TV 
+            #branchName: okjack
           - userName: smjcxf
             repoName: TV
             branchName: release
