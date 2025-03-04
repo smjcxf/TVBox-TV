@@ -25,6 +25,9 @@ jobs:
           - userName: smjcxf
             repoName: TV 
             branchName: fongmi
+          #- userName: smjcxf
+            #repoName: TV 
+            #branchName: okjack
           - userName: smjcxf
             repoName: TV
             branchName: release
@@ -54,10 +57,13 @@ jobs:
         run: |
           git clone https://github.com/androidx/media.git TVBox-TV
           cd TVBox-TV
+          #备注git checkout -b main origin/main 默认release分支
+          #git checkout -b main origin/main
           cd /home/runner/work/TVBox-TV/TVBox-TV
           git clone ${{ env.upStream }} TVBox-TV/media
           cd TVBox-TV/media
           git checkout ${{ env.commit }}
+          # 设置时区为上海
           export TZ='Asia/Shanghai'
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
           
@@ -67,6 +73,7 @@ jobs:
         run: |
           echo '修改VersionName'
           if [ "${{ matrix.userName }}" == "smjcxf" ]; then
+            # 进行 sed 修改
             sed -i 's/\.concat(buildTime())/ +\"${{ env.tag }}\"/g' app/build.gradle 
           else
              sed -i "/versionName/s#[0-9a-zA-Z_\.\'\"-]\+\$#\'${{ env.tag }}\'#" app/build.gradle
@@ -83,13 +90,16 @@ jobs:
         if: ${{ env.commit }}
         working-directory: TVBox-TV/media
         run: |
+          #删除smjcxf-TV的release目录
           rm -rf release
           zip -q -x ".git/*" -x  ".github/*" -r source-${{ env.commitS }}.zip .
+          #tar -cJf source-${{ env.commitS }}.tar.xz --exclude=.git --exclude=.github *
       
       - name: Option For Test
         if: ${{ inputs.testOption }}
         working-directory: TVBox-TV/media
         run: |
+          #添加arm64支持，不支持ijk解码
           sed -i "/armeabi-v7a[\'\"]$/s#\$#, 'arm64-v8a'#" app/build.gradle
           sed -i "/armeabi-v7a[\'\"]$/s#\$#, 'arm64-v8a'#" player/build.gradle
       
@@ -108,6 +118,7 @@ jobs:
           sed -i '$a\RELEASE_STORE_PASSWORD=FongMi'       ./gradle.properties
           sed -i '$a\RELEASE_KEY_PASSWORD=FongMi'         ./gradle.properties
 
+      # Set up JDK 17 解决androidx/room/RoomProcessor has been compiled by a more recent version of the Java Runtime (class file version 61.0), this version of the Java Runtime only recognizes class file versions up to 55.0  61需要java-version: 17
       - name: set up JDK 17 
         if: ${{ env.commit }}
         uses: actions/setup-java@v4
@@ -124,9 +135,13 @@ jobs:
         working-directory: TVBox-TV/media
         run: |
           chmod +x /home/runner/work/TVBox-TV/TVBox-TV/TVBox-TV/media/gradlew
+          #cp -r gradle.properties local.properties
           rm -rf app/src/armeabi_v7a/assets
           rm -rf app/src/arm64_v8a/assets
           ./gradlew assemblerelease --build-cache --parallel --daemon --warning-mode all
+          #./gradlew assembleleanbackJavaArm64_v8arelease --build-cache --parallel --daemon --warning-mode all
+          #./gradlew assembleleanbackJavaArmeabi_v7arelease --build-cache --parallel --daemon --warning-mode all
+          #./gradlew assemblemobileJavaArm64_v8arelease --build-cache --parallel --daemon --warning-mode all
           
       - name: Prepare App
         if: ${{ env.commit }}
@@ -135,8 +150,13 @@ jobs:
           rm -rf apk/
           mkdir -p apk/
           for file in `find ~ \( -name "*python*.apk" -o -name "*java*.apk" \) -not -name "*x86*" -print`; do
+          #for file in `find ~ -name "*java*.apk" -not -name "*x86*" -print`; do
+            # 获取文件的基本名称
             base=$(basename "$file")
+            # 在基本名称添加分支${{ matrix.branchName }}_
+            # new_base="${{ matrix.branchName }}_$base"
             new_base="$base"
+            # 移动并重命名文件
             mv "$file" "apk/$new_base"
           done
           mv source-${{ env.commitS }}.* apk/
@@ -154,6 +174,49 @@ jobs:
             git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
           fi
           
+      #- name: Upload App To Artifact
+        #if: ${{ env.commit }}
+        #uses: actions/upload-artifact@v3
+        #with:
+          #name: ${{ matrix.userName }}-${{ matrix.repoName }}-${{ matrix.branchName }}
+          #path: |
+            #TVBox-TV/apk/*
+          
+       #- name: Check if release exists and delete it
+         #if: ${{ env.commit }}
+         #run: |
+           ## 设置你的 GitHub 仓库信息
+           #REPO_OWNER=smjcxf
+           #REPO_NAME=TVBox-TV
+           #GITHUB_TOKEN=${{ secrets.GITHUBXYTV_TOKEN }} # 这是 GitHub Actions 自动提供的 token
+           #RELEASE_NAME=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}\/tree\/${{ matrix.branchName }}" ${{ github.workspace }}/README.md |grep -o '[0-9\-]\{13\}') # 这是你想要删除的 releases 的名称
+          # 使用 curl 和 GitHub API 获取 releases 列表
+          #RELEASES=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases")
+          # 使用 jq 工具解析 JSON，并查找匹配的 releases ID
+          # RELEASE_ID=$(echo "$RELEASES" | jq -r --arg name "$RELEASE_NAME" '.[] | select(.name == $name) | .id')
+          # 检查是否找到了匹配的 releases
+           #if [ -n "$RELEASE_ID" ]; then
+            # echo "Found release with name $RELEASE_NAME and ID $RELEASE_ID. Deleting it..."
+            # # 使用 curl 和 GitHub API 删除匹配的 releases
+            # curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/$RELEASE_ID"
+             #echo "Release deleted successfully."
+          # else
+            # echo "No release found with name $RELEASE_NAME."
+          # fi
+          
+      #- name: Release and Upload Assets
+         #uses: ncipollo/release-action@v1
+         #if: ${{ env.commit }}
+         #with:
+           #name: ${{ env.tag }}
+           #tag: ${{ env.tag }}
+           #bodyFile: TVBox-TV/media/apk/${{ matrix.userName }}-Release.log
+           #allowUpdates: true
+           #removeArtifacts: true
+           #artifacts: |
+             #TVBox-TV/media/apk/*.apk
+             #TVBox-TV/media/apk/source-${{ env.commitS }}.*              
+      
       - name: Download Telegram Bot API Binary
         if: ${{ env.commit }}
         uses: actions/download-artifact@v4
@@ -194,33 +257,33 @@ jobs:
           git push -f -u origin master
         continue-on-error: true
         
-      - name: Push APK to fongmi
+        - name: Push APK to fongmi
         if: ${{ env.commit }}
         run: |
-          # 克隆 fongmi 分支到临时目录
+          # 克隆fongmi分支到临时目录
           git clone --depth 5 --branch fongmi "https://smjcxf:${{ secrets.GITHUB_TOKEN }}@github.com/smjcxf/TVBox-TV.git" fongmi-apk
           cd fongmi-apk
-
+      
           # 根据当前分支设置目标目录
           if [ "${{ matrix.branchName }}" == "release" ]; then
             target_dir="apk/release"
-          elif [ "${{ matrix.branchName }}" == "fongmi" ]; then
+          else
             target_dir="apk/dev"
           fi
-
-          # 清理并创建目标目录
+      
+          # 清理并创建发布目录
           mkdir -p $target_dir
           rm -f $target_dir/*  # 清理旧文件
-
-          # 复制新构建的 APK 文件
+      
+          # 复制新构建的APK文件
           cp -v /home/runner/work/TVBox-TV/TVBox-TV/TVBox-TV/media/apk/* $target_dir/
-
-          # 配置 Git 并提交更改
+      
+          # 配置Git并提交更改
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add $target_dir/
-          git commit -m "更新 ${target_dir} APKs ${{ env.tag }}"
-
+          git commit -m " 更新apk build APKs ${{ env.tag }}"
+      
           # 强制推送更新
           git push --force origin fongmi
           cd ..
@@ -231,7 +294,7 @@ jobs:
         run: |
           rm -rf *
           rm -rf TVBox-TV
-          git reset --hard
+          git reset --hard #用于将当前分支的 HEAD 指针强制移动到指定的提交，并重置工作目录和暂存区以匹配该提交，这会丢弃所有未提交的更改
           sed -i '/url =/d' ./.git/config
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -242,6 +305,7 @@ jobs:
           git add --all
           git commit -m "${{ env.commit }}"
           git push -u -f origin master
+          #continue-on-error: true 是因为 git commit 会失败也是预期的，这个步骤可以忽略失败。加上这个命令就可以在这个步骤失败的时候，不会影响其他步骤
         continue-on-error: true
 
   telegram-bot-api:
